@@ -1,12 +1,22 @@
 import pygame
 
+# Constants
+SIZE = WIDTH, HEIGHT = 500, 500
+FPS = 60
+
+# Colors
+WHITE = (255, 255, 255)
+LIGHT_GREY = (240, 240, 240)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+
 
 class Tile(pygame.Surface):
     is_wall = False
-    is_start = False
-    is_end = False
-    base_color = (0, 0, 0)
-    color = (0, 0, 0)
+    base_color = BLACK
+    color = WHITE
     rect = pygame.rect.Rect
     location = []
 
@@ -14,6 +24,7 @@ class Tile(pygame.Surface):
         super().__init__(rect.size)
 
         self.base_color = color
+        self.color = color
         self.rect = rect
         self.location = location
 
@@ -27,63 +38,50 @@ class Tile(pygame.Surface):
 class Grid:
     width, height = 0, 0
     tile_width, tile_height = 0, 0
-    tile = Tile
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, screen_size):
         self.width = width
         self.height = height
+        self.screen_size = screen_size
 
-    def build_grid(self, screen_size):
+        self.tile_width = int(self.screen_size[0] / self.width)
+        self.tile_height = int(self.screen_size[1] / self.height)
+        self.tiles = []
+
+    def build_grid(self):
         """
         Build the grid of tiles.
-        screen_size = tuple(screen_width, screen_height) in pixels
         """
-        tiles = []
-        color = (255, 255, 255)
-        self.tile_width = int(screen_size[0] / self.width)
-        self.tile_height = int(screen_size[1] / self.height)
 
-        for j in range(self.height):
-            for i in range(self.width):
+        for x in range(self.height):
+            for y in range(self.width):
                 # alternate color of tiles to make grid visible
                 # shift is to make rows alternate if given an even width and height
-                if (self.width % 2 == 0 and self.height % 2 == 0) and j % 2 == 1:
-                    shift = 1
-                else:
-                    shift = 0
 
-                if (i + j * self.width) % 2 == shift:
-                    color = (255, 255, 255)
-                else:
-                    color = (240, 240, 240)
+                color = LIGHT_GREY
+                if x % 2 == y % 2:
+                    color = WHITE
 
-                tiles.append(Tile(color,
-                                  pygame.rect.Rect(i * self.tile_width,
-                                                   j * self.tile_height,
+                self.tiles.append(Tile(color,
+                                  pygame.rect.Rect(x * self.tile_width,
+                                                   y * self.tile_height,
                                                    self.tile_width,
                                                    self.tile_height),
-                                  [i, j]))
+                                  [x, y]))
 
-        return tiles
+    def render(self):
+        for tile in self.tiles:
+            screen.blit(tile, tile.rect.topleft)
 
 
+# Initialize pygame, create window.
 pygame.init()
-
-SIZE = WIDTH, HEIGHT = 500, 500
-
-WIN = pygame.display.set_mode(SIZE)
+screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("A* Grid")
+clock = pygame.time.Clock()
 
-FPS = 60
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-
-grid = Grid(10, 10)
-tiles = grid.build_grid(SIZE)
+grid = Grid(10, 10, SIZE)
+grid.build_grid()
 
 print("----- Controls -----")
 print("Left Click: place/remove wall")
@@ -91,33 +89,34 @@ print("Right Click: place/remove start/end")
 
 
 def draw_screen():
-    WIN.fill(BLACK)
+    screen.fill(BLACK)
 
     # draw the tile (a pygame surface) at the location based on the topleft of the rect
     # WIN.blit(green_tile, green_tile.rect.topleft)
     # WIN.blit(blue_tile, blue_tile.rect.topleft)
 
-    for tile in tiles:
-        WIN.blit(tile, tile.rect.topleft)
+    grid.render()
 
     pygame.display.update()
 
 
 def main():
-    clock = pygame.time.Clock()
-    is_running = True
-    have_placed_start = False
-    have_placed_end = False
-    while is_running:
+    start_tile = None
+    end_tile = None
+
+    running = True
+    while running:
         # run the program at most 60 frames per second - makes program controllable on any system
         clock.tick(FPS)
+
+        # process inputs
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                is_running = False
+                running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed(3) == (1, 0, 0):
                     # left mouse button clicked
-                    for tile in tiles:
+                    for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
                             if tile.is_wall:
                                 tile.set_color(tile.base_color)
@@ -125,27 +124,27 @@ def main():
                             else:
                                 tile.set_color(BLACK)
                                 tile.is_wall = True
-                if pygame.mouse.get_pressed(3) == (0, 0, 1):
+                elif pygame.mouse.get_pressed(3) == (0, 0, 1):
                     # right mouse clicked
-                    for tile in tiles:
+                    for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
-                            if not have_placed_start and not tile.is_start and not tile.is_end:
-                                tile.set_color(GREEN)
-                                tile.is_start = True
-                                have_placed_start = True
-                            elif have_placed_start and tile.is_start:
+                            if tile == start_tile:
                                 tile.set_color(tile.base_color)
-                                tile.is_start = False
-                                have_placed_start = False
-                            elif not have_placed_end and have_placed_start and not tile.is_end:
-                                tile.set_color(RED)
-                                tile.is_end = True
-                                have_placed_end = True
-                            elif have_placed_end and tile.is_end:
+                                start_tile = None
+                            elif tile == end_tile:
                                 tile.set_color(tile.base_color)
-                                tile.is_end = False
-                                have_placed_end = False
+                                end_tile = None
+                            else:
+                                if not start_tile:
+                                    tile.set_color(GREEN)
+                                    start_tile = tile
+                                elif not end_tile:
+                                    tile.set_color(RED)
+                                    end_tile = tile
 
+        # update
+
+        # render
         draw_screen()
 
     pygame.quit()
