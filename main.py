@@ -1,4 +1,5 @@
 import pygame
+import sys
 
 # Constants
 SIZE = WIDTH, HEIGHT = 500, 500
@@ -20,13 +21,17 @@ class Tile(pygame.Surface):
     rect = pygame.rect.Rect
     location = []
 
+    f = sys.float_info.max
+    h = sys.float_info.max
+    g = sys.float_info.max
+
     def __init__(self, color, rect, location):
         super().__init__(rect.size)
 
         self.base_color = color
         self.color = color
         self.rect = rect
-        self.location = location
+        self.pos = location
 
         self.fill(color)
 
@@ -67,11 +72,23 @@ class Grid:
                                                    y * self.tile_height,
                                                    self.tile_width,
                                                    self.tile_height),
-                                  [x, y]))
+                                       dict(x=x, y=y)))
 
     def render(self):
         for tile in self.tiles:
             screen.blit(tile, tile.rect.topleft)
+
+    def get_tile(self, x, y):
+        if not self.is_valid(x, y):
+            return None
+
+        for tile in self.tiles:
+            if tile.pos.x == x and tile.pos.y == y:
+                return tile
+        return None
+
+    def is_valid(self, x, y):
+        return 0 <= x <= self.width and 0 <= y <= self.width
 
 
 # Initialize pygame, create window.
@@ -86,6 +103,62 @@ grid.build_grid()
 print("----- Controls -----")
 print("Left Click: place/remove wall")
 print("Right Click: place/remove start/end")
+
+
+def a_star(start, end):
+    open_list = []
+    closed_list = []
+
+    open_list.append(start)
+
+    current = start
+
+    found_dest = False
+    while len(open_list) >= 1:
+        # Remove current and move it to closed
+        closed_list.append(open_list.pop())
+
+        # Generate Successors
+        # N.W  N  N.E
+        #    \ | /
+        # W -- C -- E
+        #    / | \
+        # S.W  S  S.E
+        #
+        # 0 C   -> Current    (x  , y)
+        # 1 N   -> North      (x  , y-1)
+        # 2 E   -> East       (x+1, y)
+        # 3 S   -> South      (x  , y+1)
+        # 4 W   -> West       (x-1, y)
+        # 5 N.W -> North-West (x-1, y-1)
+        # 6 N.E -> North-East (x+1, y-1)
+        # 7 S.W -> South-West (x-1, y+1)
+        # 8 S.E -> South-East (x+1, y+1)
+        destinations = [
+            (current.pos.x, current.pos.y-1), # N
+            (current.pos.x+1, current.pos.y), # E
+            (current.pos.x, current.pos.y+1), # S
+            (current.pos.x-1, current.pos.y), # W
+            (current.pos.x-1, current.pos.x+1), # NW
+            (current.pos.x+1, current.pos.x-1), # NE
+            (current.pos.x-1, current.pos.y+1), # SW
+            (current.pos.x-1, current.pos.y+1) # SE
+        ]
+
+        gNew, hNew, fNew = None, None, None
+
+        for dst in destinations:
+            check_tile = grid.get_tile(dst[0], dst[1])
+
+            if check_tile == end:
+                print("Reached goal!")
+                found_dest = True
+                return
+            elif check_tile.closed or check_tile.blocked:
+
+
+
+
 
 
 def draw_screen():
@@ -141,6 +214,10 @@ def main():
                                 elif not end_tile:
                                     tile.set_color(RED)
                                     end_tile = tile
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:
+                    if start_tile and end_tile:
+                        a_star(start_tile, end_tile)
 
         # update
 
