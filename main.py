@@ -8,6 +8,8 @@ SIZE = WIDTH, HEIGHT = 700, 700
 FPS = 60
 FLT_MAX = sys.float_info.max
 
+DEBUG_MODE = False
+
 # Colors
 WHITE = (255, 255, 255)
 LIGHT_GREY = (240, 240, 240)
@@ -82,8 +84,9 @@ class Grid:
     def render(self):
         for tile in self.tiles:
             screen.blit(tile, tile.rect.topleft)
-            screen.blit(font.render("%0.2f" % (tile.f > 100 and 999 or tile.f),
-                                    True, BLACK, WHITE), tile.rect.topleft)
+            if DEBUG_MODE:
+                screen.blit(font.render("%0.2f" % (tile.f > 100 and 999 or tile.f),
+                                        True, BLACK, WHITE), tile.rect.topleft)
 
     def get_tile(self, x, y):
         if not self.is_valid(x, y):
@@ -104,7 +107,7 @@ screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("A* Grid")
 clock = pygame.time.Clock()
 
-grid = Grid(10, 10, SIZE)
+grid = Grid(50, 50, SIZE)
 grid.build_grid()
 
 font = pygame.font.Font('freesansbold.ttf', 10)
