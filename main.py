@@ -1,11 +1,11 @@
 import pygame
 import sys
 import math
-import queue
+from queue import PriorityQueue
 
 # Constants
 SIZE = WIDTH, HEIGHT = 700, 700
-FPS = 60
+FPS = 120
 FLT_MAX = sys.float_info.max
 
 DEBUG_MODE = False
@@ -41,6 +41,12 @@ class Tile(pygame.Surface):
         self.pos = pos
 
         self.fill(color)
+
+    def __gt__(self, other):
+        return self.f > other.f
+
+    def __lt__(self, other):
+        return self.f < other.f
 
     def set_color(self, color):
         self.color = color
@@ -121,17 +127,30 @@ def calculate_h(tile, end):
     return math.sqrt(math.pow(tile.pos['x'] - end.pos['x'], 2.0) + math.pow(tile.pos['y'] - end.pos['y'], 2.0))
 
 
-def a_star(start, end):
-    open_list = queue.Queue()
-    open_list.put(start)
-    start.f = 0
-    start.g = 0
-    start.h = 0
-
+class ASTAR:
+    open_list = PriorityQueue()
     found_dest = False
-    while not open_list.empty():
+
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+
+        self.open_list.put(start)
+        start.g = 0
+        start.h = 0
+        start.f = 0
+
+    def step_a_star(self):
+        if self.open_list.empty():
+            print("No valid next step, path is impossible.")
+            return
+
+        if self.found_dest:
+            print("Already found destination!")
+            return
+
         # Remove current and move it to closed
-        current = open_list.get()
+        current = self.open_list.get()
         current.closed = True
 
         # Generate Successors
@@ -167,7 +186,7 @@ def a_star(start, end):
             if not check_tile:
                 continue
 
-            if check_tile == end:
+            if check_tile == self.end:
                 check_tile.parent = current
                 print("Reached goal!")
                 nxt = check_tile
@@ -175,15 +194,15 @@ def a_star(start, end):
                 while nxt.parent:
                     nxt = nxt.parent
                     nxt.set_color(BLUE)
-                found_dest = True
+                self.found_dest = True
                 return
             elif not (check_tile.closed or check_tile.blocked):
                 g_new = current.g + 1.0
-                h_new = calculate_h(check_tile, end)
+                h_new = calculate_h(check_tile, self.end)
                 f_new = g_new + h_new
 
                 if check_tile.f == FLT_MAX or check_tile.f > f_new:
-                    open_list.put(check_tile)
+                    self.open_list.put(check_tile)
 
                     check_tile.f = f_new
                     check_tile.g = g_new
@@ -207,6 +226,9 @@ def draw_screen():
 def main():
     start_tile = None
     end_tile = None
+
+    a_star = None
+    step_a_on_update = False
 
     running = True
     while running:
@@ -249,9 +271,17 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
                     if start_tile and end_tile:
-                        a_star(start_tile, end_tile)
+                        a_star = ASTAR(start_tile, end_tile)
+                elif event.key == pygame.K_n:
+                    if a_star:
+                        a_star.step_a_star()
+                elif event.key == pygame.K_r:
+                    step_a_on_update = not step_a_on_update
 
         # update
+        if step_a_on_update and a_star:
+            if not (a_star.open_list.empty() or a_star.found_dest):
+                a_star.step_a_star()
 
         # render
         draw_screen()
