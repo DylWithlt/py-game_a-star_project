@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import queue
 
 # Constants
 SIZE = WIDTH, HEIGHT = 700, 700
@@ -81,7 +82,8 @@ class Grid:
     def render(self):
         for tile in self.tiles:
             screen.blit(tile, tile.rect.topleft)
-            screen.blit(font.render("%0.2f-%0.2f" % (tile.h > 100 and 999 or tile.h, tile.f > 100 and 999 or tile.f), True, BLACK, WHITE), tile.rect.topleft)
+            screen.blit(font.render("%0.2f" % (tile.f > 100 and 999 or tile.f),
+                                    True, BLACK, WHITE), tile.rect.topleft)
 
     def get_tile(self, x, y):
         if not self.is_valid(x, y):
@@ -113,19 +115,20 @@ print("Right Click: place/remove start/end")
 
 
 def calculate_h(tile, end):
-    return math.sqrt(math.pow(tile.pos['x'] - end.pos['x'], 2) + math.pow(tile.pos['y'] - end.pos['y'], 2))
+    return math.sqrt(math.pow(tile.pos['x'] - end.pos['x'], 2.0) + math.pow(tile.pos['y'] - end.pos['y'], 2.0))
 
 
 def a_star(start, end):
-    open_list = [start]
+    open_list = queue.Queue()
+    open_list.put(start)
     start.f = 0
     start.g = 0
     start.h = 0
 
     found_dest = False
-    while len(open_list) >= 1:
+    while not open_list.empty():
         # Remove current and move it to closed
-        current = open_list.pop()
+        current = open_list.get()
         current.closed = True
 
         # Generate Successors
@@ -177,13 +180,13 @@ def a_star(start, end):
                 f_new = g_new + h_new
 
                 if check_tile.f == FLT_MAX or check_tile.f > f_new:
+                    open_list.put(check_tile)
+
                     check_tile.f = f_new
                     check_tile.g = g_new
                     check_tile.h = h_new
                     check_tile.parent = current
                     check_tile.set_color(PURPLE)
-
-                    open_list.append(check_tile)
 
 
 def draw_screen():
