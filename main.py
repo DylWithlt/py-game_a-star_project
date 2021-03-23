@@ -1,9 +1,11 @@
 import pygame
 import sys
+import math
 
 # Constants
-SIZE = WIDTH, HEIGHT = 500, 500
+SIZE = WIDTH, HEIGHT = 700, 700
 FPS = 60
+FLT_MAX = sys.float_info.max
 
 # Colors
 WHITE = (255, 255, 255)
@@ -12,26 +14,28 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
+PURPLE = (128, 0, 128)
 
 
 class Tile(pygame.Surface):
-    is_wall = False
+    blocked = False
+    closed = False
     base_color = BLACK
     color = WHITE
     rect = pygame.rect.Rect
-    location = []
+    parent = None
 
-    f = sys.float_info.max
-    h = sys.float_info.max
-    g = sys.float_info.max
+    f = FLT_MAX
+    h = FLT_MAX
+    g = FLT_MAX
 
-    def __init__(self, color, rect, location):
+    def __init__(self, color, rect, pos):
         super().__init__(rect.size)
 
         self.base_color = color
         self.color = color
         self.rect = rect
-        self.pos = location
+        self.pos = pos
 
         self.fill(color)
 
@@ -68,22 +72,23 @@ class Grid:
                     color = WHITE
 
                 self.tiles.append(Tile(color,
-                                  pygame.rect.Rect(x * self.tile_width,
-                                                   y * self.tile_height,
-                                                   self.tile_width,
-                                                   self.tile_height),
-                                       dict(x=x, y=y)))
+                                       pygame.rect.Rect(x * self.tile_width,
+                                                        y * self.tile_height,
+                                                        self.tile_width,
+                                                        self.tile_height),
+                                       {'x': x, 'y': y}))
 
     def render(self):
         for tile in self.tiles:
             screen.blit(tile, tile.rect.topleft)
+            screen.blit(font.render("%0.2f-%0.2f" % (tile.h > 100 and 999 or tile.h, tile.f > 100 and 999 or tile.f), True, BLACK, WHITE), tile.rect.topleft)
 
     def get_tile(self, x, y):
         if not self.is_valid(x, y):
             return None
 
         for tile in self.tiles:
-            if tile.pos.x == x and tile.pos.y == y:
+            if tile.pos['x'] == x and tile.pos['y'] == y:
                 return tile
         return None
 
@@ -100,23 +105,28 @@ clock = pygame.time.Clock()
 grid = Grid(10, 10, SIZE)
 grid.build_grid()
 
+font = pygame.font.Font('freesansbold.ttf', 10)
+
 print("----- Controls -----")
 print("Left Click: place/remove wall")
 print("Right Click: place/remove start/end")
 
 
+def calculate_h(tile, end):
+    return math.sqrt(math.pow(tile.pos['x'] - end.pos['x'], 2) + math.pow(tile.pos['y'] - end.pos['y'], 2))
+
+
 def a_star(start, end):
-    open_list = []
-    closed_list = []
-
-    open_list.append(start)
-
-    current = start
+    open_list = [start]
+    start.f = 0
+    start.g = 0
+    start.h = 0
 
     found_dest = False
     while len(open_list) >= 1:
         # Remove current and move it to closed
-        closed_list.append(open_list.pop())
+        current = open_list.pop()
+        current.closed = True
 
         # Generate Successors
         # N.W  N  N.E
@@ -135,30 +145,45 @@ def a_star(start, end):
         # 7 S.W -> South-West (x-1, y+1)
         # 8 S.E -> South-East (x+1, y+1)
         destinations = [
-            (current.pos.x, current.pos.y-1), # N
-            (current.pos.x+1, current.pos.y), # E
-            (current.pos.x, current.pos.y+1), # S
-            (current.pos.x-1, current.pos.y), # W
-            (current.pos.x-1, current.pos.x+1), # NW
-            (current.pos.x+1, current.pos.x-1), # NE
-            (current.pos.x-1, current.pos.y+1), # SW
-            (current.pos.x-1, current.pos.y+1) # SE
+            (current.pos['x'], current.pos['y'] - 1),  # N
+            (current.pos['x'] + 1, current.pos['y']),  # E
+            (current.pos['x'], current.pos['y'] + 1),  # S
+            (current.pos['x'] - 1, current.pos['y']),  # W
+            (current.pos['x'] - 1, current.pos['y'] - 1),  # NW
+            (current.pos['x'] + 1, current.pos['y'] - 1),  # NE
+            (current.pos['x'] - 1, current.pos['y'] + 1),  # SW
+            (current.pos['x'] + 1, current.pos['y'] + 1)  # SE
         ]
-
-        gNew, hNew, fNew = None, None, None
 
         for dst in destinations:
             check_tile = grid.get_tile(dst[0], dst[1])
 
+            if not check_tile:
+                continue
+
             if check_tile == end:
+                check_tile.parent = current
                 print("Reached goal!")
+                nxt = check_tile
+                check_tile.set_color(BLUE)
+                while nxt.parent:
+                    nxt = nxt.parent
+                    nxt.set_color(BLUE)
                 found_dest = True
                 return
-            elif check_tile.closed or check_tile.blocked:
+            elif not (check_tile.closed or check_tile.blocked):
+                g_new = current.g + 1.0
+                h_new = calculate_h(check_tile, end)
+                f_new = g_new + h_new
 
+                if check_tile.f == FLT_MAX or check_tile.f > f_new:
+                    check_tile.f = f_new
+                    check_tile.g = g_new
+                    check_tile.h = h_new
+                    check_tile.parent = current
+                    check_tile.set_color(PURPLE)
 
-
-
+                    open_list.append(check_tile)
 
 
 def draw_screen():
@@ -191,12 +216,13 @@ def main():
                     # left mouse button clicked
                     for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
-                            if tile.is_wall:
-                                tile.set_color(tile.base_color)
-                                tile.is_wall = False
-                            else:
-                                tile.set_color(BLACK)
-                                tile.is_wall = True
+                            if not (tile == start_tile or tile == end_tile):
+                                if tile.blocked:
+                                    tile.set_color(tile.base_color)
+                                    tile.blocked = False
+                                else:
+                                    tile.set_color(BLACK)
+                                    tile.blocked = True
                 elif pygame.mouse.get_pressed(3) == (0, 0, 1):
                     # right mouse clicked
                     for tile in grid.tiles:
@@ -207,7 +233,7 @@ def main():
                             elif tile == end_tile:
                                 tile.set_color(tile.base_color)
                                 end_tile = None
-                            else:
+                            elif not tile.blocked:
                                 if not start_tile:
                                     tile.set_color(GREEN)
                                     start_tile = tile
