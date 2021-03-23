@@ -121,6 +121,9 @@ font = pygame.font.Font('freesansbold.ttf', 10)
 print("----- Controls -----")
 print("Left Click: place/remove wall")
 print("Right Click: place/remove start/end")
+print("S to start A*")
+print("R to toggle off step mode")
+print("N to increment the step")
 
 
 def calculate_h(tile, end):
