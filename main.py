@@ -197,7 +197,9 @@ class ASTAR:
                 self.found_dest = True
                 return
             elif not (check_tile.closed or check_tile.blocked):
-                g_new = current.g + 1.0
+                g_new = current.g + (check_tile.pos['x'] != current.pos['x'] and check_tile.pos['y'] != current.pos['y']
+                                     and 1.5 or 1.0)
+
                 h_new = calculate_h(check_tile, self.end)
                 f_new = g_new + h_new
 
