@@ -113,7 +113,7 @@ screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("A* Grid")
 clock = pygame.time.Clock()
 
-grid = Grid(50, 50, SIZE)
+grid = Grid(10, 10, SIZE)
 grid.build_grid()
 
 font = pygame.font.Font('freesansbold.ttf', 10)
