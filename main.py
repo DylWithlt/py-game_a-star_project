@@ -130,6 +130,7 @@ def calculate_h(tile, end):
 class ASTAR:
     open_list = PriorityQueue()
     found_dest = False
+    finished = False
 
     def __init__(self, start, end):
         self.start = start
@@ -143,6 +144,7 @@ class ASTAR:
     def step_a_star(self):
         if self.open_list.empty():
             print("No valid next step, path is impossible.")
+            self.finished = True
             return
 
         if self.found_dest:
@@ -195,6 +197,7 @@ class ASTAR:
                     nxt = nxt.parent
                     nxt.set_color(BLUE)
                 self.found_dest = True
+                self.finished = True
                 return
             elif not (check_tile.closed or check_tile.blocked):
                 g_new = current.g + (check_tile.pos['x'] != current.pos['x'] and check_tile.pos['y'] != current.pos['y']
@@ -282,7 +285,7 @@ def main():
 
         # update
         if step_a_on_update and a_star:
-            if not (a_star.open_list.empty() or a_star.found_dest):
+            if not a_star.finished:
                 a_star.step_a_star()
 
         # render
