@@ -1,18 +1,14 @@
 import pygame
 
-from board import Grid
-from a_star import ASTAR
-from constants import DEBUG_MODE, WHITE, BLACK, SIZE, GREEN, RED, FPS, GRID_X, GRID_Y
+from src.board import Grid
+from src.a_star import ASTAR
+from src.constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS
 
 # Initialize pygame, create window.
 pygame.init()
-screen = pygame.display.set_mode(SIZE)
+screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("A* Grid")
 clock = pygame.time.Clock()
-
-grid = Grid(GRID_X, GRID_Y, SIZE)
-grid.build_grid()
-
 font = pygame.font.Font('freesansbold.ttf', 10)
 
 print("----- Controls -----")
@@ -32,7 +28,7 @@ def render(grid_instance):
                                     True, BLACK, WHITE), tile.rect.topleft)
 
 
-def draw_screen():
+def draw_screen(grid):
     screen.fill(BLACK)
 
     # draw the tile (a pygame surface) at the location based on the topleft of the rect
@@ -45,8 +41,8 @@ def draw_screen():
 
 
 def main():
-    start_tile = None
-    end_tile = None
+    grid = Grid(10, 10, SCREEN_SIZE)
+    grid.build_grid()
 
     a_star = None
     step_a_on_update = False
@@ -66,19 +62,20 @@ def main():
                     # right mouse clicked
                     for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
-                            if tile == start_tile:
+                            if tile == grid.start_tile:
                                 tile.set_color(tile.base_color)
-                                start_tile = None
-                            elif tile == end_tile:
+                                grid.start_tile = None
+                            elif tile == grid.end_tile:
                                 tile.set_color(tile.base_color)
-                                end_tile = None
+                                grid.end_tile = None
                             elif not tile.blocked:
-                                if not start_tile:
+                                if not grid.start_tile:
                                     tile.set_color(GREEN)
-                                    start_tile = tile
-                                elif not end_tile:
+                                    grid.start_tile = tile
+                                elif not grid.end_tile:
                                     tile.set_color(RED)
-                                    end_tile = tile
+                                    grid.end_tile = tile
+
             elif event.type == pygame.MOUSEBUTTONUP:
                 for tile in pressed_tiles:
                     if tile.drag_clicked:
@@ -87,13 +84,16 @@ def main():
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
-                    if start_tile and end_tile:
-                        a_star = ASTAR(start_tile, end_tile, grid)
+                    if grid.start_tile and grid.end_tile:
+                        a_star = ASTAR(grid.start_tile, grid.end_tile, grid)
                 elif event.key == pygame.K_n:
                     if a_star:
                         a_star.step_a_star()
                 elif event.key == pygame.K_f:
                     step_a_on_update = not step_a_on_update
+                elif event.key == pygame.K_r:
+                    grid = Grid(10, 10, SCREEN_SIZE)
+                    grid.build_grid()
 
         # moved outside event loop for mouse drag
         # gets called while left mouse is held
@@ -101,7 +101,7 @@ def main():
             for tile in grid.tiles:
                 if tile.rect.collidepoint(pygame.mouse.get_pos()):
                     # if the tile is neither a start or end, and it hasn't been clicked during mouse down
-                    if not (tile == start_tile or tile == end_tile) and not tile.drag_clicked:
+                    if not (tile == grid.start_tile or tile == grid.end_tile) and not tile.drag_clicked:
                         if tile.blocked:
                             tile.set_color(tile.base_color)
                             tile.blocked = False
@@ -120,7 +120,7 @@ def main():
                 a_star.step_a_star()
 
         # render
-        draw_screen()
+        draw_screen(grid)
 
     pygame.quit()
 

@@ -1,7 +1,7 @@
 import math
 from queue import PriorityQueue
 
-from constants import BLUE, PURPLE, FLT_MAX
+from src.constants import BLUE, PURPLE, FLT_MAX
 
 
 def calculate_h(tile, end):
@@ -9,11 +9,12 @@ def calculate_h(tile, end):
 
 
 class ASTAR:
-    open_list = PriorityQueue()
-    found_dest = False
-    finished = False
 
     def __init__(self, start, end, grid):
+        self.open_list = PriorityQueue()
+        self.found_dest = False
+        self.finished = False
+
         self.start = start
         self.end = end
         self.grid = grid

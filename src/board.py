@@ -1,6 +1,6 @@
 import pygame
 
-from constants import FLT_MAX, BLACK, WHITE, LIGHT_GREY
+from src.constants import FLT_MAX, DEBUG_MODE, BLACK, WHITE, LIGHT_GREY
 
 
 class Tile(pygame.Surface):
@@ -39,9 +39,6 @@ class Tile(pygame.Surface):
 
 
 class Grid:
-    width, height = 0, 0
-    tile_width, tile_height = 0, 0
-
     def __init__(self, width, height, screen_size):
         self.width = width
         self.height = height
@@ -50,6 +47,9 @@ class Grid:
         self.tile_width = int(self.screen_size[0] / self.width)
         self.tile_height = int(self.screen_size[1] / self.height)
         self.tiles = []
+
+        self.start_tile = None
+        self.end_tile = None
 
     def build_grid(self):
         """
