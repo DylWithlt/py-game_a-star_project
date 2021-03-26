@@ -1,8 +1,8 @@
 import pygame
 
-from src.board import Grid
-from src.a_star import ASTAR
-from src.constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS
+from board import Grid
+from a_star import ASTAR
+from constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS
 
 # Initialize pygame, create window.
 pygame.init()
