@@ -2,7 +2,7 @@ import pygame
 
 from board import Grid
 from a_star import ASTAR
-from constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS
+from constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS, GRID_X, GRID_Y
 
 # Initialize pygame, create window.
 pygame.init()
@@ -41,7 +41,7 @@ def draw_screen(grid):
 
 
 def main():
-    grid = Grid(10, 10, SCREEN_SIZE)
+    grid = Grid(GRID_X, GRID_Y, SCREEN_SIZE)
     grid.build_grid()
 
     a_star = None
