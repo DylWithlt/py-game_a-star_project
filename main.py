@@ -28,6 +28,8 @@ class Tile(pygame.Surface):
     rect = pygame.rect.Rect
     parent = None
 
+    drag_clicked = False
+
     f = FLT_MAX
     h = FLT_MAX
     g = FLT_MAX
@@ -239,28 +241,18 @@ def main():
     a_star = None
     step_a_on_update = False
 
+    pressed_tiles = []
+
     running = True
     while running:
         # run the program at most 60 frames per second - makes program controllable on any system
         clock.tick(FPS)
-
         # process inputs
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if pygame.mouse.get_pressed(3) == (1, 0, 0):
-                    # left mouse button clicked
-                    for tile in grid.tiles:
-                        if tile.rect.collidepoint(event.pos):
-                            if not (tile == start_tile or tile == end_tile):
-                                if tile.blocked:
-                                    tile.set_color(tile.base_color)
-                                    tile.blocked = False
-                                else:
-                                    tile.set_color(BLACK)
-                                    tile.blocked = True
-                elif pygame.mouse.get_pressed(3) == (0, 0, 1):
+                if pygame.mouse.get_pressed(3) == (0, 0, 1):
                     # right mouse clicked
                     for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
@@ -277,6 +269,12 @@ def main():
                                 elif not end_tile:
                                     tile.set_color(RED)
                                     end_tile = tile
+            elif event.type == pygame.MOUSEBUTTONUP:
+                for tile in pressed_tiles:
+                    if tile.drag_clicked:
+                        tile.drag_clicked = False
+                pressed_tiles.clear()
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
                     if start_tile and end_tile:
@@ -286,6 +284,25 @@ def main():
                         a_star.step_a_star()
                 elif event.key == pygame.K_f:
                     step_a_on_update = not step_a_on_update
+
+        # moved outside event loop for mouse drag
+        # gets called while left mouse is held
+        if pygame.mouse.get_pressed(3) == (1, 0, 0):
+            for tile in grid.tiles:
+                if tile.rect.collidepoint(pygame.mouse.get_pos()):
+                    # if the tile is neither a start or end, and it hasn't been clicked during mouse down
+                    if not (tile == start_tile or tile == end_tile) and not tile.drag_clicked:
+                        if tile.blocked:
+                            tile.set_color(tile.base_color)
+                            tile.blocked = False
+                        else:
+                            tile.set_color(BLACK)
+                            tile.blocked = True
+
+                    # while mouse is held, change the tile
+                    if not tile.drag_clicked:
+                        pressed_tiles.append(tile)
+                        tile.drag_clicked = True
 
         # update
         if step_a_on_update and a_star:
