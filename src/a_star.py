@@ -9,11 +9,12 @@ def calculate_h(tile, end):
 
 
 class ASTAR:
-    open_list = PriorityQueue()
-    found_dest = False
-    finished = False
 
     def __init__(self, start, end, grid):
+        self.open_list = PriorityQueue()
+        self.found_dest = False
+        self.finished = False
+
         self.start = start
         self.end = end
         self.grid = grid

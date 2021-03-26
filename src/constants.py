@@ -1,7 +1,7 @@
 import sys
 
 # Constants
-SIZE = WIDTH, HEIGHT = 700, 700
+SCREEN_SIZE = WIDTH, HEIGHT = 700, 700
 GRID_X, GRID_Y = 50, 50
 FPS = 120
 FLT_MAX = sys.float_info.max
