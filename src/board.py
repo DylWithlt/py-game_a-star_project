@@ -34,6 +34,9 @@ class Tile(pygame.Surface):
         return self.f < other.f
 
     def set_color(self, color):
+        if self.pos["x"] % 2 != self.pos["y"] % 2:
+            color = (round(color[0] * 0.9), round(color[1] * 0.9), round(color[2] * 0.9))
+
         self.color = color
         self.fill(color)
 
