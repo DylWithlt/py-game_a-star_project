@@ -1,7 +1,7 @@
 import math
 from queue import PriorityQueue
 
-from src.constants import BLUE, PURPLE, FLT_MAX
+from constants import BLUE, PURPLE, FLT_MAX
 
 
 def calculate_h(tile, end):
