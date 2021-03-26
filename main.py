@@ -121,9 +121,10 @@ font = pygame.font.Font('freesansbold.ttf', 10)
 print("----- Controls -----")
 print("Left Click: place/remove wall")
 print("Right Click: place/remove start/end")
-print("S to start A*")
-print("R to toggle off step mode")
-print("N to increment the step")
+print("s to start A*")
+print("f to toggle off step mode")
+print("n to increment the step")
+print("r to clear the board and restart")
 
 
 def calculate_h(tile, end):
@@ -283,7 +284,7 @@ def main():
                 elif event.key == pygame.K_n:
                     if a_star:
                         a_star.step_a_star()
-                elif event.key == pygame.K_r:
+                elif event.key == pygame.K_f:
                     step_a_on_update = not step_a_on_update
 
         # update
