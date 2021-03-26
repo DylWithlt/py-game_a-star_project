@@ -49,7 +49,7 @@ def main():
     end_tile = None
 
     a_star = None
-    step_a_on_update = False
+    step_a_on_update = True
 
     pressed_tiles = []
 
