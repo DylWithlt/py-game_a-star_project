@@ -2,7 +2,7 @@ import pygame
 
 from board import Grid
 from a_star import ASTAR
-from constants import DEBUG_MODE, WHITE, BLACK, SIZE, GREEN, RED, FPS
+from constants import DEBUG_MODE, WHITE, BLACK, SIZE, GREEN, RED, FPS, GRID_X, GRID_Y
 
 # Initialize pygame, create window.
 pygame.init()
@@ -10,7 +10,7 @@ screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("A* Grid")
 clock = pygame.time.Clock()
 
-grid = Grid(10, 10, SIZE)
+grid = Grid(GRID_X, GRID_Y, SIZE)
 grid.build_grid()
 
 font = pygame.font.Font('freesansbold.ttf', 10)
