@@ -113,7 +113,7 @@ screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("A* Grid")
 clock = pygame.time.Clock()
 
-grid = Grid(50, 50, SIZE)
+grid = Grid(10, 10, SIZE)
 grid.build_grid()
 
 font = pygame.font.Font('freesansbold.ttf', 10)
@@ -121,6 +121,10 @@ font = pygame.font.Font('freesansbold.ttf', 10)
 print("----- Controls -----")
 print("Left Click: place/remove wall")
 print("Right Click: place/remove start/end")
+print("s to start A*")
+print("f to toggle off step mode")
+print("n to increment the step")
+print("r to clear the board and restart")
 
 
 def calculate_h(tile, end):
@@ -280,7 +284,7 @@ def main():
                 elif event.key == pygame.K_n:
                     if a_star:
                         a_star.step_a_star()
-                elif event.key == pygame.K_r:
+                elif event.key == pygame.K_f:
                     step_a_on_update = not step_a_on_update
 
         # update
