@@ -1,6 +1,6 @@
 import pygame
 
-from constants import FLT_MAX, DEBUG_MODE, BLACK, WHITE, LIGHT_GREY
+from src.constants import FLT_MAX, BLACK, WHITE, LIGHT_GREY
 
 
 class Tile(pygame.Surface):
