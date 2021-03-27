@@ -1,6 +1,6 @@
 import random
 
-from constants import ORANGE, YELLOW, WHITE
+from constants import GRID_COLOR, VISITED_COLOR, CLOSED_MAZE_COLOR
 
 
 class MazeGenerator:
@@ -29,13 +29,13 @@ class MazeGenerator:
 
             for tile in self.grid.tiles:
                 if not tile.blocked:
-                    tile.set_color(WHITE)
+                    tile.set_color(GRID_COLOR)
 
             self.Finished = True
             return
 
         current_tile = self.stack.pop()
-        current_tile.set_color(YELLOW)
+        current_tile.set_color(VISITED_COLOR)
 
         # (x, y - 1) N
         # (x + 1, y) E
@@ -69,4 +69,4 @@ class MazeGenerator:
             neighbor_tile.visited = True
             self.stack.append(neighbor_tile)
         else:
-            current_tile.set_color(ORANGE)
+            current_tile.set_color(CLOSED_MAZE_COLOR)

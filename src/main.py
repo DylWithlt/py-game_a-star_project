@@ -3,7 +3,9 @@ import pygame
 from board import Grid
 from a_star import ASTAR
 from maze import MazeGenerator
-from constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS, GRID_X, GRID_Y
+from constants import DEBUG_MODE, FPS, GRID_X, GRID_Y, SCREEN_SIZE,\
+    GRID_COLOR, WALL_COLOR, START_COLOR, END_COLOR,\
+    BLACK, WHITE
 
 # Initialize pygame, create window.
 pygame.init()
@@ -65,17 +67,17 @@ def main():
                     for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
                             if tile == grid.start_tile:
-                                tile.set_color(tile.base_color)
+                                tile.set_color(GRID_COLOR)
                                 grid.start_tile = None
                             elif tile == grid.end_tile:
-                                tile.set_color(tile.base_color)
+                                tile.set_color(GRID_COLOR)
                                 grid.end_tile = None
                             elif not tile.blocked:
                                 if not grid.start_tile:
-                                    tile.set_color(GREEN)
+                                    tile.set_color(START_COLOR)
                                     grid.start_tile = tile
                                 elif not grid.end_tile:
-                                    tile.set_color(RED)
+                                    tile.set_color(END_COLOR)
                                     grid.end_tile = tile
 
             elif event.type == pygame.MOUSEBUTTONUP:

@@ -1,13 +1,14 @@
 import pygame
 
-from constants import FLT_MAX, BLACK, WHITE
+from constants import FLT_MAX,\
+    GRID_COLOR, WALL_COLOR
 
 
 class Tile(pygame.Surface):
     blocked = False
     closed = False
-    base_color = BLACK
-    color = WHITE
+    base_color = GRID_COLOR
+    color = GRID_COLOR
     rect = pygame.rect.Rect
     parent = None
     visited = False
@@ -28,7 +29,7 @@ class Tile(pygame.Surface):
 
     def block(self, toggle):
         self.blocked = toggle
-        self.set_color(toggle and BLACK or WHITE)
+        self.set_color(toggle and WALL_COLOR or GRID_COLOR)
 
     def __gt__(self, other):
         return self.f > other.f
@@ -76,7 +77,7 @@ class Grid:
                                              self.tile_height),
                             {'x': x, 'y': y})
 
-                tile.set_color(WHITE)
+                tile.set_color(GRID_COLOR)
 
                 self.tiles.append(tile)
 
