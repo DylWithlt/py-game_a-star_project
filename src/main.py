@@ -108,7 +108,7 @@ def main():
                 if tile.rect.collidepoint(pygame.mouse.get_pos()):
                     # if the tile is neither a start or end, and it hasn't been clicked during mouse down
                     if not (tile == grid.start_tile or tile == grid.end_tile) and not tile.drag_clicked:
-                        tile.block(tile.blocked)
+                        tile.block(not tile.blocked)
 
                     # while mouse is held, change the tile
                     if not tile.drag_clicked:
