@@ -2,7 +2,10 @@ import pygame
 
 from board import Grid
 from a_star import ASTAR
-from constants import DEBUG_MODE, WHITE, BLACK, SCREEN_SIZE, GREEN, RED, FPS
+from maze import MazeGenerator
+from constants import DEBUG_MODE, FPS, GRID_X, GRID_Y, SCREEN_SIZE,\
+    GRID_COLOR, WALL_COLOR, START_COLOR, END_COLOR,\
+    BLACK, WHITE
 
 # Initialize pygame, create window.
 pygame.init()
@@ -41,10 +44,11 @@ def draw_screen(grid):
 
 
 def main():
-    grid = Grid(10, 10, SCREEN_SIZE)
+    grid = Grid(GRID_X, GRID_Y, SCREEN_SIZE)
     grid.build_grid()
 
     a_star = None
+    maze_generator = None
     step_a_on_update = True
 
     pressed_tiles = []
@@ -63,17 +67,17 @@ def main():
                     for tile in grid.tiles:
                         if tile.rect.collidepoint(event.pos):
                             if tile == grid.start_tile:
-                                tile.set_color(tile.base_color)
+                                tile.set_color(GRID_COLOR)
                                 grid.start_tile = None
                             elif tile == grid.end_tile:
-                                tile.set_color(tile.base_color)
+                                tile.set_color(GRID_COLOR)
                                 grid.end_tile = None
                             elif not tile.blocked:
                                 if not grid.start_tile:
-                                    tile.set_color(GREEN)
+                                    tile.set_color(START_COLOR)
                                     grid.start_tile = tile
                                 elif not grid.end_tile:
-                                    tile.set_color(RED)
+                                    tile.set_color(END_COLOR)
                                     grid.end_tile = tile
 
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -92,8 +96,10 @@ def main():
                 elif event.key == pygame.K_f:
                     step_a_on_update = not step_a_on_update
                 elif event.key == pygame.K_r:
-                    grid = Grid(10, 10, SCREEN_SIZE)
+                    grid = Grid(GRID_X, GRID_Y, SCREEN_SIZE)
                     grid.build_grid()
+                elif event.key == pygame.K_m:
+                    maze_generator = MazeGenerator(grid)
 
         # moved outside event loop for mouse drag
         # gets called while left mouse is held
@@ -102,12 +108,7 @@ def main():
                 if tile.rect.collidepoint(pygame.mouse.get_pos()):
                     # if the tile is neither a start or end, and it hasn't been clicked during mouse down
                     if not (tile == grid.start_tile or tile == grid.end_tile) and not tile.drag_clicked:
-                        if tile.blocked:
-                            tile.set_color(tile.base_color)
-                            tile.blocked = False
-                        else:
-                            tile.set_color(BLACK)
-                            tile.blocked = True
+                        tile.block(not tile.blocked)
 
                     # while mouse is held, change the tile
                     if not tile.drag_clicked:
@@ -118,6 +119,9 @@ def main():
         if step_a_on_update and a_star:
             if not a_star.finished:
                 a_star.step_a_star()
+
+        if maze_generator and not maze_generator.Finished:
+            maze_generator.step_draw_maze()
 
         # render
         draw_screen(grid)

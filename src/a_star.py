@@ -1,7 +1,7 @@
 import math
 from queue import PriorityQueue
-
-from constants import BLUE, PURPLE, FLT_MAX
+from constants import FLT_MAX,\
+    PATH_COLOR, CLOSED_A_COLOR, OPEN_COLOR
 
 
 def calculate_h(tile, end):
@@ -36,6 +36,7 @@ class ASTAR:
 
         # Remove current and move it to closed
         current = self.open_list.get()
+        current.set_color(CLOSED_A_COLOR)
         current.closed = True
 
         # Generate Successors
@@ -75,10 +76,10 @@ class ASTAR:
                 check_tile.parent = current
                 print("Reached goal!")
                 nxt = check_tile
-                check_tile.set_color(BLUE)
+                check_tile.set_color(PATH_COLOR)
                 while nxt.parent:
                     nxt = nxt.parent
-                    nxt.set_color(BLUE)
+                    nxt.set_color(PATH_COLOR)
                 self.found_dest = True
                 self.finished = True
                 return
@@ -96,4 +97,4 @@ class ASTAR:
                     check_tile.g = g_new
                     check_tile.h = h_new
                     check_tile.parent = current
-                    check_tile.set_color(PURPLE)
+                    check_tile.set_color(OPEN_COLOR)

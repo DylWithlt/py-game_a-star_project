@@ -1,15 +1,17 @@
 import pygame
 
-from constants import FLT_MAX, BLACK, WHITE, LIGHT_GREY
+from constants import FLT_MAX,\
+    GRID_COLOR, WALL_COLOR
 
 
 class Tile(pygame.Surface):
     blocked = False
     closed = False
-    base_color = BLACK
-    color = WHITE
+    base_color = GRID_COLOR
+    color = GRID_COLOR
     rect = pygame.rect.Rect
     parent = None
+    visited = False
 
     drag_clicked = False
 
@@ -17,15 +19,17 @@ class Tile(pygame.Surface):
     h = FLT_MAX
     g = FLT_MAX
 
-    def __init__(self, color, rect, pos):
+    def __init__(self, rect, pos):
         super().__init__(rect.size)
 
-        self.base_color = color
-        self.color = color
+        self.base_color = None
+        self.color = None
         self.rect = rect
         self.pos = pos
 
-        self.fill(color)
+    def block(self, toggle):
+        self.blocked = toggle
+        self.set_color(toggle and WALL_COLOR or GRID_COLOR)
 
     def __gt__(self, other):
         return self.f > other.f
@@ -37,8 +41,11 @@ class Tile(pygame.Surface):
         if self.pos["x"] % 2 != self.pos["y"] % 2:
             color = (round(color[0] * 0.9), round(color[1] * 0.9), round(color[2] * 0.9))
 
+        if not self.base_color:
+            self.base_color = color
+
         self.color = color
-        self.fill(color)
+        self.fill(self.color)
 
 
 class Grid:
@@ -64,16 +71,15 @@ class Grid:
                 # alternate color of tiles to make grid visible
                 # shift is to make rows alternate if given an even width and height
 
-                color = LIGHT_GREY
-                if x % 2 == y % 2:
-                    color = WHITE
+                tile = Tile(pygame.rect.Rect(x * self.tile_width,
+                                             y * self.tile_height,
+                                             self.tile_width,
+                                             self.tile_height),
+                            {'x': x, 'y': y})
 
-                self.tiles.append(Tile(color,
-                                       pygame.rect.Rect(x * self.tile_width,
-                                                        y * self.tile_height,
-                                                        self.tile_width,
-                                                        self.tile_height),
-                                       {'x': x, 'y': y}))
+                tile.set_color(GRID_COLOR)
+
+                self.tiles.append(tile)
 
     def get_tile(self, x, y):
         if not self.is_valid(x, y):
