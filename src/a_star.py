@@ -1,6 +1,5 @@
 import math
 from queue import PriorityQueue
-
 from constants import FLT_MAX,\
     PATH_COLOR, CLOSED_A_COLOR, OPEN_COLOR
 
